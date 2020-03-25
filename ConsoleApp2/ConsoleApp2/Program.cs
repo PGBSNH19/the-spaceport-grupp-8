@@ -18,23 +18,23 @@ namespace ConsoleApp2
         {
             public string sName;
             public List<string> vShips = new List<string>();
-            public int iBill;
+            public int iBill;           // unecasary
             public int iDrivingShipNumber;
-            public int iCoins;
+            public double dWealth;
 
             Random random = new Random();
 
             public Character()
             {
-                iCoins = random.Next(0, 99);
+                dWealth = random.Next(0, 99);
             }
 
 
             public void assignShip(int i)
             {
-                //iDrivingShipNumber = random.Next(0, i);    
-                //⚠ ERROR: Always use ship 0 while debugging, re-enable later	⚠		
-                iDrivingShipNumber = 0;
+                //iDrivingShipNumber = random.Next(0, i);                           //  |        ____                   ______
+                //⚠ ERROR: Always use ship 0 while debugging, re-enable later	⚠	//	| GIT: " They should be able to select their starship on arrival in the application."
+                iDrivingShipNumber = 0;                                                     
             }
 
 
@@ -139,26 +139,27 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             // calculateProcentage
             //-----------------------------------------------------------------------------
-            public double calculateProcentage(double iShipLenght)                                
+            public double calculateProcentage(double dShipLenght)                                
             {
-                return iShipLenght / dLength * 100;
+                return dShipLenght / dLength * 100;
             }
 
             //-----------------------------------------------------------------------------
             // calculatePrice
             //-----------------------------------------------------------------------------
-            public double calculatePrice(double iShipLenght)
+            public double calculatePrice(double dShipLenght)
             {
-                return calculateProcentage(iShipLenght);    // How much % of the deck does the ship take? each % = +1kr
+                return calculateProcentage(dShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
 
 
             //-----------------------------------------------------------------------------
             // dockShip
             //-----------------------------------------------------------------------------
-            public void dockShip(double iShipLenght, Character character)
+            public void dockShip(double dShipLenght, Character character)
             {
-                procentageFiled += calculateProcentage(iShipLenght);
+                procentageFiled += calculateProcentage(dShipLenght);
+                character.dWealth -= calculatePrice(dShipLenght);       // ? dont charge, just add bill to DB?
                 //ADD CHAR TO SQL DATABASE
             }
 
@@ -166,18 +167,18 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             // releaseShip
             //-----------------------------------------------------------------------------
-            public void releaseShip(double iShipLenght)
+            public void releaseShip(double dShipLenght)
             {
-                procentageFiled -= calculateProcentage(iShipLenght);
+                procentageFiled -= calculateProcentage(dShipLenght);
             }
 
 
             //-----------------------------------------------------------------------------
             // shipWillFit
             //-----------------------------------------------------------------------------
-            public bool shipWillFit(double iShipLenght)
+            public bool shipWillFit(double dShipLenght)
             {
-                if (calculateProcentage(iShipLenght) + procentageFiled < 98)    // 2 margin of error. a ship cant be 2 anyhow
+                if (calculateProcentage(dShipLenght) + procentageFiled < 98)    // 2 margin of error. a ship cant be 2 anyhow
                     return true;
 
                 return false;
@@ -202,7 +203,6 @@ namespace ConsoleApp2
             //RestClient client = new RestClient("https://swapi.co/api/");
             //RestRequest request = new RestRequest("people/", DataFormat.Json);      // "Dataformat" = enum -> json, xml, none
             //string sContent = client.Execute(request).Content;
-            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
            /*⚠ ERROR: Un - comment ^   Comment Out -> */ string sContent = File.ReadAllText("tempCache.json");
 
@@ -227,11 +227,17 @@ namespace ConsoleApp2
             //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
 
             while (true)
-            {
-                                                                                   // replace 0 with iPersonAproaching
+            {                                                                    // replace 0 with iPersonAproaching
                 if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
                 {
-                    parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+                    if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
+                    {
+                        parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+                    }
+                    else
+                    {
+                        Console.WriteLine("Sorry, you can't afford that");
+                    }
                 }
                 else
                 {
