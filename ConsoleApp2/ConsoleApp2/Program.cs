@@ -32,7 +32,9 @@ namespace ConsoleApp2
 
             public void assignShip(int i)
             {
-                iDrivingShipNumber = random.Next(0, i);
+                //iDrivingShipNumber = random.Next(0, i);    
+                //⚠ ERROR: Always use ship 0 while debugging, re-enable later	⚠		
+                iDrivingShipNumber = 0;
             }
 
 
@@ -129,16 +131,26 @@ namespace ConsoleApp2
             float fLength;
             float procentageFiled;
 
+            public RectangularPlatform(float x)
+            {
+                fLength = x;
+            }
 
             //-----------------------------------------------------------------------------
             // calculateProcentage
             //-----------------------------------------------------------------------------
-            public float calculateProcentage(float iShipLenght)
+            public float calculateProcentage(float iShipLenght)                                // SOMETHINGS BROKEN, RETURNS FAULTY VALUES
             {
-                float fTakesUp = (fLength / 100);
-                fTakesUp = fTakesUp * iShipLenght;
+                //float fTakesUp = (fLength / 100);
+                //fTakesUp = fTakesUp * iShipLenght;
 
-                return fTakesUp;                              
+                //return fTakesUp;                              
+
+                return iShipLenght / fLength * 100;
+
+
+
+
             }
 
             //-----------------------------------------------------------------------------
@@ -153,9 +165,11 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             // dockShip
             //-----------------------------------------------------------------------------
-            public void dockShip(float iShipLenght)
+            public void dockShip(float iShipLenght, Character character)
             {
                 procentageFiled += calculateProcentage(iShipLenght);
+                //ADD CHAR TO SQL DATABASE
+
             }
 
 
@@ -205,7 +219,7 @@ namespace ConsoleApp2
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
             #endregion
 
-            RectangularPlatform parkingDeck = new RectangularPlatform();
+            RectangularPlatform parkingDeck = new RectangularPlatform(26f);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
 
 
 
@@ -220,11 +234,18 @@ namespace ConsoleApp2
 
 
             //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
-            if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
-            {
-               
-            }
+            //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
 
+            while (true)
+            {
+
+                                                                                   // replace 0 with iPersonAproaching
+                if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
+                {
+                    parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+                }
+
+            }
 
 
 
