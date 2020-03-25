@@ -128,35 +128,26 @@ namespace ConsoleApp2
         //-----------------------------------------------------------------------------
         public class RectangularPlatform
         {
-            float fLength;
-            float procentageFiled;
+            double dLength;
+            double procentageFiled;
 
-            public RectangularPlatform(float x)
+            public RectangularPlatform(double x)
             {
-                fLength = x;
+                dLength = x;
             }
 
             //-----------------------------------------------------------------------------
             // calculateProcentage
             //-----------------------------------------------------------------------------
-            public float calculateProcentage(float iShipLenght)                                // SOMETHINGS BROKEN, RETURNS FAULTY VALUES
+            public double calculateProcentage(double iShipLenght)                                
             {
-                //float fTakesUp = (fLength / 100);
-                //fTakesUp = fTakesUp * iShipLenght;
-
-                //return fTakesUp;                              
-
-                return iShipLenght / fLength * 100;
-
-
-
-
+                return iShipLenght / dLength * 100;
             }
 
             //-----------------------------------------------------------------------------
             // calculatePrice
             //-----------------------------------------------------------------------------
-            public float calculatePrice(float iShipLenght)
+            public double calculatePrice(double iShipLenght)
             {
                 return calculateProcentage(iShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
@@ -165,18 +156,17 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             // dockShip
             //-----------------------------------------------------------------------------
-            public void dockShip(float iShipLenght, Character character)
+            public void dockShip(double iShipLenght, Character character)
             {
                 procentageFiled += calculateProcentage(iShipLenght);
                 //ADD CHAR TO SQL DATABASE
-
             }
 
 
             //-----------------------------------------------------------------------------
             // releaseShip
             //-----------------------------------------------------------------------------
-            public void releaseShip(float iShipLenght)
+            public void releaseShip(double iShipLenght)
             {
                 procentageFiled -= calculateProcentage(iShipLenght);
             }
@@ -185,9 +175,9 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             // shipWillFit
             //-----------------------------------------------------------------------------
-            public bool shipWillFit(float iShipLenght)
+            public bool shipWillFit(double iShipLenght)
             {
-                if (calculateProcentage(iShipLenght) + procentageFiled < 100)
+                if (calculateProcentage(iShipLenght) + procentageFiled < 98)    // 2 margin of error. a ship cant be 2 anyhow
                     return true;
 
                 return false;
@@ -219,7 +209,7 @@ namespace ConsoleApp2
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
             #endregion
 
-            RectangularPlatform parkingDeck = new RectangularPlatform(26f);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
+            RectangularPlatform parkingDeck = new RectangularPlatform(26);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
 
 
 
@@ -238,11 +228,14 @@ namespace ConsoleApp2
 
             while (true)
             {
-
                                                                                    // replace 0 with iPersonAproaching
                 if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
                 {
                     parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+                }
+                else
+                {
+                    Console.WriteLine("Parkinglot is full, please come back later");
                 }
 
             }

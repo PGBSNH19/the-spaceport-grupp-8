@@ -33,7 +33,7 @@ namespace ConsoleApp2
             public string model { get; set; }
             public string manufacturer { get; set; }
             public string cost_in_credits { get; set; }
-            public float length { get; set; }               // was string
+            public double length { get; set; }               // was string
             public string max_atmosphering_speed { get; set; }
             public string crew { get; set; }
             public string passengers { get; set; }
