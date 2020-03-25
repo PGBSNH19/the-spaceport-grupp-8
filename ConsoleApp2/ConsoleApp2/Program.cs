@@ -119,9 +119,10 @@ namespace ConsoleApp2
 
 
         //-----------------------------------------------------------------------------
-        // Rectangular Platform                                 ...........................
-        //      - endast fickparkerings platser, ie rectangle   ..   P    .   P   .  P   ..
-        //
+        // Rectangular Platform                                 .............................
+        //      - endast fickparkerings platser, ie rectangle   ..   P    .   🚗   .  P   ..
+        //                                                           ^
+        //                                                          🚗
         //-----------------------------------------------------------------------------
         public class RectangularPlatform
         {
@@ -129,6 +130,9 @@ namespace ConsoleApp2
             float procentageFiled;
 
 
+            //-----------------------------------------------------------------------------
+            // calculateProcentage
+            //-----------------------------------------------------------------------------
             public float calculateProcentage(float iShipLenght)
             {
                 float fTakesUp = (fLength / 100);
@@ -137,22 +141,36 @@ namespace ConsoleApp2
                 return fTakesUp;                              
             }
 
+            //-----------------------------------------------------------------------------
+            // calculatePrice
+            //-----------------------------------------------------------------------------
             public float calculatePrice(float iShipLenght)
             {
                 return calculateProcentage(iShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
 
+
+            //-----------------------------------------------------------------------------
+            // dockShip
+            //-----------------------------------------------------------------------------
             public void dockShip(float iShipLenght)
             {
                 procentageFiled += calculateProcentage(iShipLenght);
             }
 
+
+            //-----------------------------------------------------------------------------
+            // releaseShip
+            //-----------------------------------------------------------------------------
             public void releaseShip(float iShipLenght)
             {
                 procentageFiled -= calculateProcentage(iShipLenght);
             }
 
 
+            //-----------------------------------------------------------------------------
+            // shipWillFit
+            //-----------------------------------------------------------------------------
             public bool shipWillFit(float iShipLenght)
             {
                 if (calculateProcentage(iShipLenght) + procentageFiled < 100)
@@ -195,7 +213,20 @@ namespace ConsoleApp2
             List<Character> vCharacters = convertToCharachterObject(parsed_Json);
 
 
-            Ship.Result ship = Ship.getShipDetails(vCharacters[0].vShips[0]);
+
+            // Pick a random person that wants to park
+            Random random = new Random();
+            int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
+
+
+            //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
+            if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
+            {
+               
+            }
+
+
+
 
         }
     }
