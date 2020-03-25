@@ -19,13 +19,23 @@ namespace ConsoleApp2
             public string sName;
             public List<string> vShips = new List<string>();
             public int iBill;
+            public int iDrivingShipNumber;
             public int iCoins;
+
+            Random random = new Random();
 
             public Character()
             {
-                Random random = new Random();
                 iCoins = random.Next(0, 99);
             }
+
+
+            public void assignShip(int i)
+            {
+                iDrivingShipNumber = random.Next(0, i);
+            }
+
+
         }
 
         #region AUTO GENERATED CLASS FROM JSON
@@ -99,7 +109,8 @@ namespace ConsoleApp2
                 {
                     Character character = new Character();                // gets overwriten in vector (even though its heap allocated...), thus needs to be spam allocated in here
                     character.sName = parsedjson.results[i].name;
-                    character.vShips = parsedjson.results[i].starships;
+                    character.vShips = parsedjson.results[i].starships;   //        ____________
+                    character.assignShip(character.vShips.Count);        // Give him one of his ships when he spawns
                     vCharacters.Add(character);
                 }
             }
@@ -107,29 +118,51 @@ namespace ConsoleApp2
         }
 
 
-
-
-
-
         //-----------------------------------------------------------------------------
-        // getShipDetails
+        // Rectangular Platform                                 ...........................
+        //      - endast fickparkerings platser, ie rectangle   ..   P    .   P   .  P   ..
+        //
         //-----------------------------------------------------------------------------
-        public static void getShipDetails()
+        public class RectangularPlatform
         {
-            #region CURRENTLY USES CACHED DATA DUE TO DEBUG SPEED, RE-ENABLE ON RELEASE TO USE API
-            //⚠ ERROR: Slow debugging, use cached file instead	⚠		
-            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+            float fLength;
+            float procentageFiled;
 
-            ////// Get every char from API
-            //RestClient client = new RestClient("https://swapi.co/api/");
-            //RestRequest request = new RestRequest("starships/", DataFormat.Json);      // "Dataformat" = enum -> json, xml, none
-            //string sContent = client.Execute(request).Content;
-            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-            /*⚠ ERROR: Un - comment ^   Comment Out -> */
-            string sContent = File.ReadAllText("tempCacheShip.json");
-            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-            #endregion
+
+            public float calculateProcentage(float iShipLenght)
+            {
+                float fTakesUp = (fLength / 100);
+                fTakesUp = fTakesUp * iShipLenght;
+
+                return fTakesUp;                              
+            }
+
+            public float calculatePrice(float iShipLenght)
+            {
+                return calculateProcentage(iShipLenght);    // How much % of the deck does the ship take? each % = +1kr
+            }
+
+            public void dockShip(float iShipLenght)
+            {
+                procentageFiled += calculateProcentage(iShipLenght);
+            }
+
+            public void releaseShip(float iShipLenght)
+            {
+                procentageFiled -= calculateProcentage(iShipLenght);
+            }
+
+
+            public bool shipWillFit(float iShipLenght)
+            {
+                if (calculateProcentage(iShipLenght) + procentageFiled < 100)
+                    return true;
+
+                return false;
+            }
+
         }
+       
 
 
 
@@ -154,8 +187,7 @@ namespace ConsoleApp2
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
             #endregion
 
-
-
+            RectangularPlatform parkingDeck = new RectangularPlatform();
 
 
 
@@ -163,6 +195,7 @@ namespace ConsoleApp2
             List<Character> vCharacters = convertToCharachterObject(parsed_Json);
 
 
+            Ship.Result ship = Ship.getShipDetails(vCharacters[0].vShips[0]);
 
         }
     }
