@@ -185,17 +185,65 @@ namespace ConsoleApp2
             }
 
         }
-       
-
-
-
 
         //-----------------------------------------------------------------------------
-        // Main
+        // System Log 
         //-----------------------------------------------------------------------------
-        static void Main(string[] args)
+        static public void systemLog(string s, ConsoleColor consoleColorEnum = ConsoleColor.Red) // default red
         {
-           #region CURRENTLY USES CACHED DATA, RE-ENABLE ON RELEASE TO USE API
+            Console.ForegroundColor = consoleColorEnum;
+            Console.WriteLine(("-[" + s + "]-").ToUpper());
+            Console.ForegroundColor = 0;
+
+        }
+
+
+        //-----------------------------------------------------------------------------
+        // Authorized 
+        //-----------------------------------------------------------------------------
+        static public bool isAuthorized(List<Character> vCharacters, string s) // unesesary copying...
+        {
+            for (int i = 0; i != vCharacters.Count; i++)
+            {
+                if (vCharacters[i].sName == s)
+                    return true;
+            }
+            return false;
+        }
+
+        //-----------------------------------------------------------------------------
+        // pickVehicle 
+        //-----------------------------------------------------------------------------
+        static public Ship.Result pickVehicle(Character character) // unesesary copying...
+        {
+            Ship.Result shipInfo = new Ship.Result();
+            List<Ship.Result> vshipInfo = new List<Ship.Result>();
+
+
+            for (int j = 0; j != character.vShips.Count ; j++)
+            {
+                Console.WriteLine("Which vehicles do you want to use?");
+
+                shipInfo = Ship.getShipDetails(character.vShips[j]);
+                vshipInfo.Add(shipInfo);
+
+                Console.WriteLine(j + " - " + vshipInfo[j].name);
+            }
+
+           int i = Convert.ToInt32(Console.ReadLine());
+            return vshipInfo[i];
+        }
+
+
+
+
+        //-----------------------------------------------------------------------------
+        // loadChar 
+        //-----------------------------------------------------------------------------
+        static public Character loadChar(string sCustomerName) // unesesary copying...
+        {
+
+            #region CURRENTLY USES CACHED DATA, RE-ENABLE ON RELEASE TO USE API
             //⚠ ERROR: Slow debugging, use cached file instead	⚠		
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -204,17 +252,48 @@ namespace ConsoleApp2
             //RestRequest request = new RestRequest("people/", DataFormat.Json);      // "Dataformat" = enum -> json, xml, none
             //string sContent = client.Execute(request).Content;
 
-           /*⚠ ERROR: Un - comment ^   Comment Out -> */ string sContent = File.ReadAllText("tempCache.json");
+            /*⚠ ERROR: Un - comment ^   Comment Out -> */
+            string sContent = File.ReadAllText("tempCache.json");
 
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
             #endregion
 
-            RectangularPlatform parkingDeck = new RectangularPlatform(26);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
-
-
-
             RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent);   // Pre-made tokenizer
             List<Character> vCharacters = convertToCharachterObject(parsed_Json);
+
+            int iAnswer = 0;
+            for (int i = 0; i != vCharacters.Count; i++)
+            {
+                if (vCharacters[i].sName == sCustomerName)
+                {
+                    iAnswer = i;
+                    break;
+                }
+            }
+
+            return vCharacters[iAnswer];
+        }
+
+
+
+        //-----------------------------------------------------------------------------
+        // Main
+        //-----------------------------------------------------------------------------
+        static void Main(string[] args)
+        {
+           
+
+            RectangularPlatform parkingDeck = new RectangularPlatform(26);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
+
+            Console.WriteLine("Whats your name?");
+            string sCustomerName = Console.ReadLine();
+            Character cCustomer = loadChar(sCustomerName);
+
+
+            Ship.Result ship = pickVehicle(cCustomer);
+
+
+
 
 
 
@@ -226,27 +305,76 @@ namespace ConsoleApp2
             //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
             //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
 
+
+
+
+
             while (true)
-            {                                                                    // replace 0 with iPersonAproaching
-                if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
-                {
-                    if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
+            {
+                if /*(isAuthorized(vCharacters, sCustomerName))*/(true)
+                {                                                                    // replace 0 with iPersonAproaching
+                    if (parkingDeck.shipWillFit(ship.length))
                     {
-                        parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+                        if (cCustomer.dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length))
+                        {
+                            parkingDeck.dockShip(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length, cCustomer);
+                        }
+                        else
+                        {
+                            systemLog("Sorry, you can't afford that");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Sorry, you can't afford that");
+                        systemLog("Parkinglot is full, please come back later");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Parkinglot is full, please come back later");
+                    systemLog("You do not have acces to this garage");
                 }
 
             }
 
 
+
+
+
+
+
+
+
+
+            #region NOW TEMPORARYLY CACHES (using) SHIP FROM 'pickVehicle' WHILE DIALOUGE IS GOING ON
+
+            //while (true)
+            //{
+            //    if(isAuthorized(vCharacters, sCustomerName))
+            //    {                                                                    // replace 0 with iPersonAproaching
+            //        if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
+            //        {
+            //            if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
+            //            {
+            //                parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+            //            }
+            //            else
+            //            {
+            //               systemLog("Sorry, you can't afford that");
+            //            }
+            //        }
+            //        else
+            //        {
+            //           systemLog("Parkinglot is full, please come back later");
+            //        }
+            //    }
+            //    else
+            //    {
+            //       systemLog("You do not have acces to this garage");
+            //    }
+            //
+            //}
+
+            #endregion
 
         }
     }
