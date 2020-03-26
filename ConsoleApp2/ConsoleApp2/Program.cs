@@ -4,11 +4,15 @@ using RestSharp.Deserializers;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace ConsoleApp2
 {
     class Program
     {
+
+        const int PARKINGLOTCAPACITY = 26;  // Macro Substitude
+                                    // 26 is the equvilant of 2 default ships (Char 0, Ship 0). used while debuging % for predictibility
 
 
         //-----------------------------------------------------------------------------
@@ -163,6 +167,7 @@ namespace ConsoleApp2
                 procentageFiled += calculateProcentage(dShipLenght);
                 character.dWealth -= calculatePrice(dShipLenght);       // ? dont charge, just add bill to DB?
                 //ADD CHAR TO SQL DATABASE
+                systemLog("Docked Ship", ConsoleColor.Green);
             }
 
 
@@ -195,13 +200,13 @@ namespace ConsoleApp2
         {
             Console.ForegroundColor = consoleColorEnum;
             Console.WriteLine(("-[" + s + "]-").ToUpper());
-            Console.ForegroundColor = 0;
-
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
 
         //-----------------------------------------------------------------------------
         // Authorized 
+        //  - Obsolete - inefficient
         //-----------------------------------------------------------------------------
         static public bool isAuthorized(Character character) // unesesary copying...
         {
@@ -240,10 +245,10 @@ namespace ConsoleApp2
             Ship.Result shipInfo = new Ship.Result();
             List<Ship.Result> vshipInfo = new List<Ship.Result>();
 
+            Console.WriteLine("Which vehicles do you want to use?");
 
             for (int j = 0; j != character.vShips.Count ; j++)
             {
-                Console.WriteLine("Which vehicles do you want to use?");
 
                 shipInfo = Ship.getShipDetails(character.vShips[j]);
                 vshipInfo.Add(shipInfo);
@@ -311,30 +316,34 @@ namespace ConsoleApp2
         //-----------------------------------------------------------------------------
         static void Main(string[] args)
         {
-           
 
-            RectangularPlatform parkingDeck = new RectangularPlatform(26);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
+            RectangularPlatform parkingDeck = new RectangularPlatform(PARKINGLOTCAPACITY);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
 
-            Console.WriteLine("Whats your name?");
-            string sCustomerName = Console.ReadLine();
-            Character cCustomer = loadCharacters(sCustomerName);
 
-            if (cCustomer.bValid)
+            while (true)      //⚠ Gameloop	⚠		
             {
+                Thread.Sleep(1500);
+
+
+                Console.WriteLine("What's your name?");
+                string sCustomerName = Console.ReadLine();
+                Character cCustomer = loadCharacters(sCustomerName);
+
+                if (cCustomer.bValid)
+                {
                     Ship.Result ship = pickVehicle(cCustomer);
 
-                #region OLD CRAP
-                // Pick a random person that wants to park
-                //Random random = new Random();
-                //int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
+                    #region OLD CRAP
+                    // Pick a random person that wants to park
+                    //Random random = new Random();
+                    //int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
 
 
-                //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
-                //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
-                #endregion
-                while (true)      //⚠ ERROR: Loop's just for debugging, remove later	⚠		
+                    //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
+                    //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
+                    #endregion
 
-                {
+
                     //if (isAuthorized(cCustomer))
                     if (cCustomer.bValid)
                     {                                                                    // replace 0 with iPersonAproaching
@@ -350,49 +359,49 @@ namespace ConsoleApp2
                             systemLog("Parkinglot is full, please come back later");
                     }
                 }
+
+                else
+                    systemLog("You do not have acces to this garage");
+
+
+
+
+
+
+
+
+                #region NOW TEMPORARYLY CACHES (using) SHIP FROM 'pickVehicle' WHILE DIALOUGE IS GOING ON
+
+                //while (true)
+                //{
+                //    if(isAuthorized(vCharacters, sCustomerName))
+                //    {                                                                    // replace 0 with iPersonAproaching
+                //        if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
+                //        {
+                //            if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
+                //            {
+                //                parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+                //            }
+                //            else
+                //            {
+                //               systemLog("Sorry, you can't afford that");
+                //            }
+                //        }
+                //        else
+                //        {
+                //           systemLog("Parkinglot is full, please come back later");
+                //        }
+                //    }
+                //    else
+                //    {
+                //       systemLog("You do not have acces to this garage");
+                //    }
+                //
+                //}
+
+                #endregion
+
             }
-
-            else
-                systemLog("You do not have acces to this garage");
-
-
-
-
-
-
-
-
-            #region NOW TEMPORARYLY CACHES (using) SHIP FROM 'pickVehicle' WHILE DIALOUGE IS GOING ON
-
-            //while (true)
-            //{
-            //    if(isAuthorized(vCharacters, sCustomerName))
-            //    {                                                                    // replace 0 with iPersonAproaching
-            //        if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
-            //        {
-            //            if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
-            //            {
-            //                parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
-            //            }
-            //            else
-            //            {
-            //               systemLog("Sorry, you can't afford that");
-            //            }
-            //        }
-            //        else
-            //        {
-            //           systemLog("Parkinglot is full, please come back later");
-            //        }
-            //    }
-            //    else
-            //    {
-            //       systemLog("You do not have acces to this garage");
-            //    }
-            //
-            //}
-
-            #endregion
-
         }
     }
 }
