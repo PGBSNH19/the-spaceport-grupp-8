@@ -21,6 +21,7 @@ namespace ConsoleApp2
             public int iBill;           // unecasary
             public int iDrivingShipNumber;
             public double dWealth;
+            public bool bValid = false;
 
             Random random = new Random();
 
@@ -113,6 +114,7 @@ namespace ConsoleApp2
                     character.sName = parsedjson.results[i].name;
                     character.vShips = parsedjson.results[i].starships;   //        ____________
                     character.assignShip(character.vShips.Count);        // Give him one of his ships when he spawns
+                    character.bValid = true;
                     vCharacters.Add(character);
                 }
             }
@@ -201,14 +203,33 @@ namespace ConsoleApp2
         //-----------------------------------------------------------------------------
         // Authorized 
         //-----------------------------------------------------------------------------
-        static public bool isAuthorized(List<Character> vCharacters, string s) // unesesary copying...
+        static public bool isAuthorized(Character character) // unesesary copying...
         {
+            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+            ////// Get every char from API
+            //RestClient client = new RestClient("https://swapi.co/api/");
+            //RestRequest request = new RestRequest("people/", DataFormat.Json);      // "Dataformat" = enum -> json, xml, none
+            //string sContent = client.Execute(request).Content;
+
+            /*⚠ ERROR: Un - comment ^   Comment Out -> */
+            string sContent = File.ReadAllText("tempCache.json");
+            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+            RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent);   // Pre-made tokenizer
+            List<Character> vCharacters = convertToCharachterObject(parsed_Json);
+
+
+
+
             for (int i = 0; i != vCharacters.Count; i++)
             {
-                if (vCharacters[i].sName == s)
+                if (vCharacters[i].sName == character.sName)
                     return true;
             }
             return false;
+
+
         }
 
         //-----------------------------------------------------------------------------
@@ -238,9 +259,9 @@ namespace ConsoleApp2
 
 
         //-----------------------------------------------------------------------------
-        // loadChar 
+        // loadCharacters 
         //-----------------------------------------------------------------------------
-        static public Character loadChar(string sCustomerName) // unesesary copying...
+        static public Character loadCharacters(string sCustomerName) // unesesary copying...
         {
 
             #region CURRENTLY USES CACHED DATA, RE-ENABLE ON RELEASE TO USE API
@@ -261,7 +282,7 @@ namespace ConsoleApp2
             RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent);   // Pre-made tokenizer
             List<Character> vCharacters = convertToCharachterObject(parsed_Json);
 
-            int iAnswer = 0;
+            int iAnswer = -1;
             for (int i = 0; i != vCharacters.Count; i++)
             {
                 if (vCharacters[i].sName == sCustomerName)
@@ -271,7 +292,16 @@ namespace ConsoleApp2
                 }
             }
 
-            return vCharacters[iAnswer];
+            if (iAnswer != -1)
+                return vCharacters[iAnswer];
+
+            else
+            {
+                // un ahtorized char
+                Character character = new Character();
+                character.sName = sCustomerName;
+                return character;
+            }
         }
 
 
@@ -287,56 +317,43 @@ namespace ConsoleApp2
 
             Console.WriteLine("Whats your name?");
             string sCustomerName = Console.ReadLine();
-            Character cCustomer = loadChar(sCustomerName);
+            Character cCustomer = loadCharacters(sCustomerName);
 
-
-            Ship.Result ship = pickVehicle(cCustomer);
-
-
-
-
-
-
-            // Pick a random person that wants to park
-            Random random = new Random();
-            int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
-
-
-            //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
-            //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
-
-
-
-
-
-            while (true)
+            if (cCustomer.bValid)
             {
-                if /*(isAuthorized(vCharacters, sCustomerName))*/(true)
-                {                                                                    // replace 0 with iPersonAproaching
-                    if (parkingDeck.shipWillFit(ship.length))
-                    {
-                        if (cCustomer.dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length))
+                    Ship.Result ship = pickVehicle(cCustomer);
+
+                #region OLD CRAP
+                // Pick a random person that wants to park
+                //Random random = new Random();
+                //int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
+
+
+                //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
+                //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
+                #endregion
+                while (true)      //⚠ ERROR: Loop's just for debugging, remove later	⚠		
+
+                {
+                    //if (isAuthorized(cCustomer))
+                    if (cCustomer.bValid)
+                    {                                                                    // replace 0 with iPersonAproaching
+                        if (parkingDeck.shipWillFit(ship.length))
                         {
-                            parkingDeck.dockShip(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length, cCustomer);
+                            if (cCustomer.dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length))
+                                parkingDeck.dockShip(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length, cCustomer);
+
+                            else
+                                systemLog("Sorry, you can't afford that");
                         }
                         else
-                        {
-                            systemLog("Sorry, you can't afford that");
-                        }
-                    }
-                    else
-                    {
-                        systemLog("Parkinglot is full, please come back later");
+                            systemLog("Parkinglot is full, please come back later");
                     }
                 }
-                else
-                {
-                    systemLog("You do not have acces to this garage");
-                }
-
             }
 
-
+            else
+                systemLog("You do not have acces to this garage");
 
 
 
