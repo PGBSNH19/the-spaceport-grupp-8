@@ -12,7 +12,7 @@ namespace ConsoleApp2
     {
 
         const int PARKINGLOTCAPACITY = 26;  // Macro Substitude
-                                    // 26 is the equvilant of 2 default ships (Char 0, Ship 0). used while debuging % for predictibility
+                                            // 26 is the equvilant of 2 default ships (Char 0, Ship 0). used while debuging % for predictibility
 
 
         //-----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ namespace ConsoleApp2
             {
                 //iDrivingShipNumber = random.Next(0, i);                           //  |        ____                   ______
                 //⚠ ERROR: Always use ship 0 while debugging, re-enable later	⚠	//	| GIT: " They should be able to select their starship on arrival in the application."
-                iDrivingShipNumber = 0;                                                     
+                iDrivingShipNumber = 0;
             }
 
 
@@ -51,29 +51,29 @@ namespace ConsoleApp2
         //-----------------------------------------------------------------------------
         public class Result
         {
-            public string            name           { get; set; }            //⚠ ERROR: Use union to make the proper name synonyms via shared memory	⚠		
-            public string            height         { get; set; }
-            public string            mass           { get; set; }
-            public string            hair_color     { get; set; }
-            public string            skin_color     { get; set; }
-            public string            eye_color      { get; set; }
-            public string            birth_year     { get; set; }
-            public string            gender         { get; set; }
-            public string            homeworld      { get; set; }
-            public List<string>      films          { get; set; }
-            public List<string>      species        { get; set; }
-            public List<object>      vehicles       { get; set; }
-            public List<string>      starships      { get; set; }
-            public DateTime          created        { get; set; }
-            public DateTime          edited         { get; set; }
-            public string            url            { get; set; }
+            public string name { get; set; }            //⚠ ERROR: Use union to make the proper name synonyms via shared memory	⚠		
+            public string height { get; set; }
+            public string mass { get; set; }
+            public string hair_color { get; set; }
+            public string skin_color { get; set; }
+            public string eye_color { get; set; }
+            public string birth_year { get; set; }
+            public string gender { get; set; }
+            public string homeworld { get; set; }
+            public List<string> films { get; set; }
+            public List<string> species { get; set; }
+            public List<object> vehicles { get; set; }
+            public List<string> starships { get; set; }
+            public DateTime created { get; set; }
+            public DateTime edited { get; set; }
+            public string url { get; set; }
         }
         public class RootObject
         {
-            public int              count           { get; set; }
-            public string           next            { get; set; }
-            public object           previous        { get; set; }
-            public List<Result>     results         { get; set; }
+            public int count { get; set; }
+            public string next { get; set; }
+            public object previous { get; set; }
+            public List<Result> results { get; set; }
         }
         //------------------------END-AUTO---------------------------------------------
         #endregion
@@ -110,7 +110,7 @@ namespace ConsoleApp2
             List<Character> vCharacters = new List<Character>();
 
             //.count()
-            for (int i = 0; i < parsedjson.results.Count; i++)   
+            for (int i = 0; i < parsedjson.results.Count; i++)
             {
                 if (parsedjson.results[i].starships.Count != 0) // No ship? no way/need to get to the parking lot
                 {
@@ -145,7 +145,7 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             // calculateProcentage
             //-----------------------------------------------------------------------------
-            public double calculateProcentage(double dShipLenght)                                
+            public double calculateProcentage(double dShipLenght)
             {
                 return dShipLenght / m_dLength * 100;
             }
@@ -157,11 +157,7 @@ namespace ConsoleApp2
             {
                 return calculateProcentage(dShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
-            public static int Tax(long en, long ex)
-            {
-                int iTaxTime = Convert.ToInt32(en - ex);
-                return iTaxTime;
-            }
+
 
             //-----------------------------------------------------------------------------
             // dockShip
@@ -172,7 +168,6 @@ namespace ConsoleApp2
                 character.dWealth -= calculatePrice(dShipLenght);       // ? dont charge, just add bill to DB?
                 //ADD CHAR TO SQL DATABASE
                 systemLog("Docked Ship", ConsoleColor.Green);
-                //ADD DATE.NOW TO ENTER IN DB
             }
 
 
@@ -181,12 +176,7 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             public void releaseShip(double dShipLenght)
             {
-<<<<<<< HEAD
                 m_procentageFiled -= calculateProcentage(dShipLenght);
-=======
-                procentageFiled -= calculateProcentage(dShipLenght);
-                //ADD DATE.NOW TO EXIT IN DB
->>>>>>> 3c777bcc24613753fff3aad897a9dfea417bfb8b
             }
 
 
@@ -216,7 +206,7 @@ namespace ConsoleApp2
                     caCapacity[i] = '-';
                 }
 
-                for (int i = 0; i <  m_procentageFiled; i++)
+                for (int i = 0; i < m_procentageFiled; i++)
                 {
                     caCapacity[i] = '#';
                 }
@@ -282,7 +272,7 @@ namespace ConsoleApp2
 
             Console.WriteLine("Which vehicles do you want to use?");
 
-            for (int j = 0; j != character.vShips.Count ; j++)
+            for (int j = 0; j != character.vShips.Count; j++)
             {
 
                 shipInfo = Ship.getShipDetails(character.vShips[j]);
@@ -291,7 +281,7 @@ namespace ConsoleApp2
                 Console.WriteLine(j + " - " + vshipInfo[j].name);
             }
 
-           int i = Convert.ToInt32(Console.ReadLine());
+            int i = Convert.ToInt32(Console.ReadLine());
             return vshipInfo[i];
         }
 
