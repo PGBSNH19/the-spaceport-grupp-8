@@ -293,26 +293,6 @@ namespace ConsoleApp2
 
 
 
-        //-----------------------------------------------------------------------------
-        // assignRandomVehicle 
-        //-----------------------------------------------------------------------------
-        static public Ship.Result assignRandomVehicle(Character character) // unesesary copying...
-        {
-            Ship.Result shipInfo = new Ship.Result();
-            List<Ship.Result> vshipInfo = new List<Ship.Result>();
-
-            Random random = new Random();
-
-
-            int i = random.Next(0, character.vShips.Count);
-
-            shipInfo = Ship.getShipDetails(character.vShips[i]);
-
-
-
-            return shipInfo;
-        }
-
 
         //-----------------------------------------------------------------------------
         // loadCharacters 
@@ -373,7 +353,6 @@ namespace ConsoleApp2
 
             while (true)      //⚠ Gameloop	⚠		
             {
-                Console.Clear();
                 Thread.Sleep(1500);
                 parkingDeck.showCapacity();
 
@@ -384,8 +363,7 @@ namespace ConsoleApp2
 
                 if (cCustomer.bValid)
                 {
-                    //Ship.Result ship = pickVehicle(cCustomer);
-                    Ship.Result ship = assignRandomVehicle(cCustomer);      // MAKE FUNCTION ASYNC!!! (GIT requirement)
+                    Ship.Result ship = pickVehicle(cCustomer);
 
                     #region OLD CRAP
                     // Pick a random person that wants to park
@@ -402,8 +380,8 @@ namespace ConsoleApp2
                     {                                                                    // replace 0 with iPersonAproaching
                         if (parkingDeck.shipWillFit(ship.length))
                         {
-                            if (cCustomer.dWealth > parkingDeck.calculatePrice(ship.length))
-                                parkingDeck.dockShip(ship.length, cCustomer);
+                            if (cCustomer.dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length))
+                                parkingDeck.dockShip(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length, cCustomer);
 
                             else
                                 systemLog("Sorry, you can't afford that");
