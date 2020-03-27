@@ -157,7 +157,11 @@ namespace ConsoleApp2
             {
                 return calculateProcentage(dShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
-
+            public static int Tax(long en, long ex)
+            {
+                int iTaxTime = Convert.ToInt32(en - ex);
+                return iTaxTime;
+            }
 
             //-----------------------------------------------------------------------------
             // dockShip
@@ -168,6 +172,7 @@ namespace ConsoleApp2
                 character.dWealth -= calculatePrice(dShipLenght);       // ? dont charge, just add bill to DB?
                 //ADD CHAR TO SQL DATABASE
                 systemLog("Docked Ship", ConsoleColor.Green);
+                //ADD DATE.NOW TO ENTER IN DB
             }
 
 
@@ -177,6 +182,7 @@ namespace ConsoleApp2
             public void releaseShip(double dShipLenght)
             {
                 procentageFiled -= calculateProcentage(dShipLenght);
+                //ADD DATE.NOW TO EXIT IN DB
             }
 
 
