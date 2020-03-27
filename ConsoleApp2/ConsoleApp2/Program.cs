@@ -134,12 +134,12 @@ namespace ConsoleApp2
         //-----------------------------------------------------------------------------
         public class RectangularPlatform
         {
-            double dLength;
-            double procentageFiled;
+            double m_dLength;
+            double m_procentageFiled;
 
             public RectangularPlatform(double x)
             {
-                dLength = x;
+                m_dLength = x;
             }
 
             //-----------------------------------------------------------------------------
@@ -147,7 +147,7 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             public double calculateProcentage(double dShipLenght)                                
             {
-                return dShipLenght / dLength * 100;
+                return dShipLenght / m_dLength * 100;
             }
 
             //-----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             public void dockShip(double dShipLenght, Character character)
             {
-                procentageFiled += calculateProcentage(dShipLenght);
+                m_procentageFiled += calculateProcentage(dShipLenght);
                 character.dWealth -= calculatePrice(dShipLenght);       // ? dont charge, just add bill to DB?
                 //ADD CHAR TO SQL DATABASE
                 systemLog("Docked Ship", ConsoleColor.Green);
@@ -176,7 +176,7 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             public void releaseShip(double dShipLenght)
             {
-                procentageFiled -= calculateProcentage(dShipLenght);
+                m_procentageFiled -= calculateProcentage(dShipLenght);
             }
 
 
@@ -185,11 +185,36 @@ namespace ConsoleApp2
             //-----------------------------------------------------------------------------
             public bool shipWillFit(double dShipLenght)
             {
-                if (calculateProcentage(dShipLenght) + procentageFiled < 98)    // 2 margin of error. a ship cant be 2 anyhow
+                if (calculateProcentage(dShipLenght) + m_procentageFiled < 98)    // 2 margin of error. a ship cant be 2 anyhow
                     return true;
 
                 return false;
             }
+
+
+            //-----------------------------------------------------------------------------
+            // showCapacity
+            //-----------------------------------------------------------------------------
+            public void showCapacity()
+            {
+
+                Console.WriteLine("Dock Capacity: ");
+                char[] caCapacity = new char[100];
+
+                for (int i = 0; i < caCapacity.Length; i++)
+                {
+                    caCapacity[i] = '-';
+                }
+
+                for (int i = 0; i <  m_procentageFiled; i++)
+                {
+                    caCapacity[i] = '#';
+                }
+                string s = new string(caCapacity);
+                systemLog(s, ConsoleColor.Gray);
+            }
+
+
 
         }
 
@@ -323,6 +348,7 @@ namespace ConsoleApp2
             while (true)      //⚠ Gameloop	⚠		
             {
                 Thread.Sleep(1500);
+                parkingDeck.showCapacity();
 
 
                 Console.WriteLine("What's your name?");
@@ -343,7 +369,6 @@ namespace ConsoleApp2
                     //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
                     #endregion
 
-
                     //if (isAuthorized(cCustomer))
                     if (cCustomer.bValid)
                     {                                                                    // replace 0 with iPersonAproaching
@@ -356,7 +381,7 @@ namespace ConsoleApp2
                                 systemLog("Sorry, you can't afford that");
                         }
                         else
-                            systemLog("Parkinglot is full, please come back later");
+                            systemLog("Your ship wont fit");
                     }
                 }
 
