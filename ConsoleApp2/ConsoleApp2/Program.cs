@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ConsoleApp2
 {
@@ -157,6 +158,10 @@ namespace ConsoleApp2
             {
                 return calculateProcentage(dShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
+
+            //-----------------------------------------------------------------------------
+            // Tax
+            //-----------------------------------------------------------------------------
             public static int Tax(long lEntry, long lExit)
             {
                 int iTaxTime = Convert.ToInt32(lEntry - lExit);
@@ -175,6 +180,20 @@ namespace ConsoleApp2
                 //ADD DATE.NOW TO ENTER IN DB
             }
 
+            //-----------------------------------------------------------------------------
+            // departureShip
+            //-----------------------------------------------------------------------------
+            public void departureShip(Character character)
+            {
+
+                // select * from SpacePark where Name = [cCustomer.sName] && checkOut == NULL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<    // REQUIERES ENTITYFRAMEWORK INTERGRATION
+                double dShipLenght = 26; // 26 is temporary, get actuall value from SQL database
+
+                m_procentageFiled -= calculateProcentage(dShipLenght);
+                //ADD CHAR TO SQL DATABASE
+                systemLog("Ship Left The Parkinglot", ConsoleColor.Green);
+                //ADD DATE.NOW TO ENTER IN DB
+            }
 
             //-----------------------------------------------------------------------------
             // releaseShip
@@ -236,10 +255,9 @@ namespace ConsoleApp2
 
 
         //-----------------------------------------------------------------------------
-        // Authorized 
-        //  - Obsolete - inefficient
+        // getJsonFromApi                                                                          // Try to make it async to meet GIT requirement 
         //-----------------------------------------------------------------------------
-        static public bool isAuthorized(Character character) // unesesary copying...
+        public static async Task<string> getJsonFromApi()
         {
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
             ////// Get every char from API
@@ -250,9 +268,19 @@ namespace ConsoleApp2
             /*⚠ ERROR: Un - comment ^   Comment Out -> */
             string sContent = File.ReadAllText("tempCache.json");
             //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+            return sContent;
+        }
+
+        //-----------------------------------------------------------------------------
+        // Authorized 
+        //  - Obsolete - inefficient
+        //-----------------------------------------------------------------------------
+        static public bool isAuthorized(Character character) // unesesary copying...
+        {
+            Task<String> sContent = getJsonFromApi();
 
 
-            RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent);   // Pre-made tokenizer
+            RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent.Result);   // Pre-made tokenizer
             List<Character> vCharacters = convertToCharachterObject(parsed_Json);
 
 
@@ -293,27 +321,13 @@ namespace ConsoleApp2
 
 
 
-
         //-----------------------------------------------------------------------------
-        // loadCharacters 
+        // LoadCharacterAsync 
         //-----------------------------------------------------------------------------
-        static public Character loadCharacters(string sCustomerName) // unesesary copying...
+        public static async Task<Character> loadCharacterAsync(string sCustomerName) // unesesary copying...
         {
 
-            #region CURRENTLY USES CACHED DATA, RE-ENABLE ON RELEASE TO USE API
-            //⚠ ERROR: Slow debugging, use cached file instead	⚠		
-            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-            ////// Get every char from API
-            //RestClient client = new RestClient("https://swapi.co/api/");
-            //RestRequest request = new RestRequest("people/", DataFormat.Json);      // "Dataformat" = enum -> json, xml, none
-            //string sContent = client.Execute(request).Content;
-
-            /*⚠ ERROR: Un - comment ^   Comment Out -> */
-            string sContent = File.ReadAllText("tempCache.json");
-
-            //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-            #endregion
+            string sContent = await getJsonFromApi();
 
             RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent);   // Pre-made tokenizer
             List<Character> vCharacters = convertToCharachterObject(parsed_Json);
@@ -327,6 +341,8 @@ namespace ConsoleApp2
                     break;
                 }
             }
+
+
 
             if (iAnswer != -1)
                 return vCharacters[iAnswer];
@@ -342,96 +358,200 @@ namespace ConsoleApp2
 
 
 
+
+
+
+
+
+        //-----------------------------------------------------------------------------
+        // loadCharacters 
+        //-----------------------------------------------------------------------------
+        static public Character loadCharacters(string sCustomerName) // unesesary copying...
+        {
+
+            #region CURRENTLY USES CACHED DATA, RE-ENABLE ON RELEASE TO USE API
+            Task<string> sContent = getJsonFromApi();
+            #endregion
+
+            RootObject parsed_Json = JsonConvert.DeserializeObject<RootObject>(sContent.Result);   // Pre-made tokenizer
+            List<Character> vCharacters = convertToCharachterObject(parsed_Json);
+
+            int iAnswer = -1;
+            for (int i = 0; i != vCharacters.Count; i++)
+            {
+                if (vCharacters[i].sName == sCustomerName)
+                {
+                    iAnswer = i;
+                    break;
+                }
+            }
+
+
+            if (iAnswer != -1)
+                return vCharacters[iAnswer];
+
+            else
+            {
+                // un ahtorized char
+                Character character = new Character();
+                character.sName = sCustomerName;
+                return character;
+            }
+        }
+
+
+        //public static int delayed()
+        //{
+        //    Thread.Sleep(500);
+        //    systemLog("delay", ConsoleColor.Cyan);
+        //    return 0;
+        //}
+
+        //-----------------------------------------------------------------------------
+        // intiiateDialouge
+        //-----------------------------------------------------------------------------
+        public static async Task intiiateDialouge(RectangularPlatform parkingDeck)
+        {
+           
+            parkingDeck.showCapacity();
+
+
+            // Task<int> task = new Task<int>(delayed);
+            // task.Start();
+            // systemLog("FROM intiiateDialouge2", ConsoleColor.DarkYellow);   // TASK SPEED TEST, Remove!
+
+
+
+
+            
+
+            Character cCustomer = new Character();                                                
+            Console.WriteLine("What's your name?");
+            string sCustomerName = Console.ReadLine();
+
+
+            //Task.Run(async () => await LoadCharacterAsync(sCustomerName));
+
+            Task<Character> taskLoadChar = new Task<Character>(function: () => loadCharacters(sCustomerName));
+            taskLoadChar.Start();
+
+
+            // Connect to DB here while api is loading 🖥
+            //  establishDataBaseConnection();
+
+            cCustomer = await taskLoadChar;
+
+            #region UNCOMMENT : Customer has parked a vehicle here but never check it out, thus its still here. Checkout now? : REQUIERES ENTITYFRAMEWORK INTERGRATION
+            // select * from SpacePark where Name = [cCustomer.sName] && checkOut == NULL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<    // REQUIERES ENTITYFRAMEWORK INTERGRATION
+            // if (sqlResults != null)
+            // {
+            //     systemLog("you already have (a) ship(s) here, do you want to check one of them out? Y/N");
+            //     char cAnswer = Console.ReadKey();
+            //     switch (cAnswer)
+            //     {
+            //         case 'y':
+            //         case 'Y':
+            //             checkOutShip();
+            //             return;
+            //
+            //         default:
+            //             break;
+            //     }
+            // }
+            // Customer has parked a vehicle here but never check it out, thus its still here. Checkout now?
+            #endregion
+
+            if (cCustomer.bValid)
+            {
+                Ship.Result ship = pickVehicle(cCustomer);
+
+                #region OLD CRAP
+                // Pick a random person that wants to park
+                //Random random = new Random();
+                //int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
+
+
+                //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
+                //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
+                #endregion
+
+                //if (isAuthorized(cCustomer))
+                if (cCustomer.bValid)
+                {                                                                    // replace 0 with iPersonAproaching
+                    if (parkingDeck.shipWillFit(ship.length))
+                    {
+                        if (cCustomer.dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length))
+                            parkingDeck.dockShip(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length, cCustomer);
+
+                        else
+                            systemLog("Sorry, you can't afford that");
+                    }
+                    else
+                        systemLog("Your ship wont fit");
+                }
+            }
+
+            else
+                systemLog("You do not have acces to this garage");
+
+
+
+
+
+
+
+
+            #region NOW TEMPORARYLY CACHES (using) SHIP FROM 'pickVehicle' WHILE DIALOUGE IS GOING ON
+
+            //while (true)
+            //{
+            //    if(isAuthorized(vCharacters, sCustomerName))
+            //    {                                                                    // replace 0 with iPersonAproaching
+            //        if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
+            //        {
+            //            if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
+            //            {
+            //                parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
+            //            }
+            //            else
+            //            {
+            //               systemLog("Sorry, you can't afford that");
+            //            }
+            //        }
+            //        else
+            //        {
+            //           systemLog("Parkinglot is full, please come back later");
+            //        }
+            //    }
+            //    else
+            //    {
+            //       systemLog("You do not have acces to this garage");
+            //    }
+            //
+            //}
+
+            #endregion
+
+
+            
+        }
+
+
+
         //-----------------------------------------------------------------------------
         // Main
         //-----------------------------------------------------------------------------
         static void Main(string[] args)
         {
 
-            RectangularPlatform parkingDeck = new RectangularPlatform(PARKINGLOTCAPACITY);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
+            RectangularPlatform southParkingDeck = new RectangularPlatform(PARKINGLOTCAPACITY);   // 26 is the equvilant of 2 default ships. use while debuging % for predictibility
 
 
             while (true)      //⚠ Gameloop	⚠		
             {
+                Console.Clear();
+                intiiateDialouge(southParkingDeck).Wait();   // major parking company, thus we can manage different places / parking decks.
                 Thread.Sleep(1500);
-                parkingDeck.showCapacity();
-
-
-                Console.WriteLine("What's your name?");
-                string sCustomerName = Console.ReadLine();
-                Character cCustomer = loadCharacters(sCustomerName);
-
-                if (cCustomer.bValid)
-                {
-                    Ship.Result ship = pickVehicle(cCustomer);
-
-                    #region OLD CRAP
-                    // Pick a random person that wants to park
-                    //Random random = new Random();
-                    //int iPersonAproaching = /*random.Next(0, vCharacters.Count);*/ 0;       // ⚠ HardCoded while debuging, re-enable random later
-
-
-                    //  GITHUB: "...be able to pay before they can leave the parking lot and get an invoice in the end." , No entry fee? Current wallet irrelevant?
-                    //if (!  (parkingDeck.calculatePrice( Ship.getShipDetails(vCharacters[iPersonAproaching].vShips[iPersonAproaching]).length) > vCharacters[iPersonAproaching].iCoins)  )
-                    #endregion
-
-                    //if (isAuthorized(cCustomer))
-                    if (cCustomer.bValid)
-                    {                                                                    // replace 0 with iPersonAproaching
-                        if (parkingDeck.shipWillFit(ship.length))
-                        {
-                            if (cCustomer.dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length))
-                                parkingDeck.dockShip(Ship.getShipDetails(cCustomer.vShips[cCustomer.iDrivingShipNumber]).length, cCustomer);
-
-                            else
-                                systemLog("Sorry, you can't afford that");
-                        }
-                        else
-                            systemLog("Your ship wont fit");
-                    }
-                }
-
-                else
-                    systemLog("You do not have acces to this garage");
-
-
-
-
-
-
-
-
-                #region NOW TEMPORARYLY CACHES (using) SHIP FROM 'pickVehicle' WHILE DIALOUGE IS GOING ON
-
-                //while (true)
-                //{
-                //    if(isAuthorized(vCharacters, sCustomerName))
-                //    {                                                                    // replace 0 with iPersonAproaching
-                //        if (parkingDeck.shipWillFit(      Ship.getShipDetails( vCharacters[0].vShips[  vCharacters[0].iDrivingShipNumber   ]    ).length    )    )      
-                //        {
-                //            if (vCharacters[0].dWealth > parkingDeck.calculatePrice(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length))
-                //            {
-                //                parkingDeck.dockShip(Ship.getShipDetails(vCharacters[0].vShips[vCharacters[0].iDrivingShipNumber]).length,  vCharacters[0] );
-                //            }
-                //            else
-                //            {
-                //               systemLog("Sorry, you can't afford that");
-                //            }
-                //        }
-                //        else
-                //        {
-                //           systemLog("Parkinglot is full, please come back later");
-                //        }
-                //    }
-                //    else
-                //    {
-                //       systemLog("You do not have acces to this garage");
-                //    }
-                //
-                //}
-
-                #endregion
-
             }
         }
     }
