@@ -157,10 +157,18 @@ namespace ConsoleApp2
             {
                 return calculateProcentage(dShipLenght);    // How much % of the deck does the ship take? each % = +1kr
             }
-            public static int Tax(long lEntry, long lExit)
+
+            public static int Tax(DateTime dtEntry, DateTime dtExit) // The Cost is 5 currency per 30 min
             {
-                int iTaxTime = Convert.ToInt32(lEntry - lExit);
-                return iTaxTime;
+
+            TimeSpan tsA = dtEntry - dtExit;
+
+            int iHalfHourIncrement = (int)Math.Ceiling((tsA.TotalMinutes / 30));
+
+            iCost = iHalfHourIncrement * 5;
+
+
+                return iCost;
             }
 
             //-----------------------------------------------------------------------------
