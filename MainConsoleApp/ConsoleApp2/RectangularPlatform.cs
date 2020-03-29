@@ -34,7 +34,7 @@ namespace ConsoleApp2
         public double CalculateCheckoutFee(StarWarsPerson pilot)
         {
             var timespan = pilot.ExitTime.HasValue ? pilot.ExitTime.Value - pilot.EntryTime : TimeSpan.Zero;
-            return Math.Round(timespan.TotalMinutes * 1, 2, MidpointRounding.AwayFromZero);
+            return (Math.Round((timespan.TotalMinutes/30))*5);
         }
 
  

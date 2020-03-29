@@ -53,14 +53,14 @@ namespace ConsoleApp2
                 //char cAnswer = Console.ReadLine();
 
 
-                if (sAnswer[0] == 'e') 
+                if (sAnswer[0] == 'e' || sAnswer[0] == 'E') 
                 { 
                     parkingDeck.CheckoutShip(currentPilot);
                     return;
                 }
            
 
-                if (sAnswer[0] == 's')
+                if (sAnswer[0] == 's' || sAnswer[0] == 'S')
                     parkingDeck.CheckoutShip(currentPilot);
 
 

@@ -20,8 +20,8 @@ namespace ConsoleApp2
                 Console.Clear();
                 Gui.InitiateDialogueAsync(southParkingDeck).Wait();   // major parking company, thus we can manage different places / parking decks.
 
-                //Logger.ShowSystemErrorText("Press enter to continue", ConsoleColor.DarkGreen);
-                //Console.ReadLine();
+                Logger.ShowSystemErrorText("Press enter to continue", ConsoleColor.DarkGreen);
+                Console.ReadLine();
             }
         }
     }
