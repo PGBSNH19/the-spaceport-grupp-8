@@ -17,20 +17,29 @@ namespace ConsoleApp2
             var customerName = Console.ReadLine();
 
 
-            Task<Character> taskLoadChar = new Task<Character>(function: () => ApiUtils.LoadCharacter(customerName));
-            taskLoadChar.Start();
-
             
             // Connect to DB here while api is loading :desktop:
             //  establishDataBaseConnection();
 
 
 
-            Character customer = new Character(); //Empty place holder
+            Character customer = ApiUtils.LoadCharacter(customerName);
+
+
+            //Task<Character> taskLoadChar = new Task<Character>(function: () => ApiUtils.LoadCharacter(customerName));
+
+            //Task<List<Ship.Result>> taskLoadShips = new Task<List<Ship.Result>>(function: () => loadAllVehiclesAsync(customer));
+
+            var taskLoadShips = Task.Factory.StartNew(() => loadAllVehiclesAsync(customer));
+
+            //Task<int> taskLoadShips = new Task<int>(function: ()=>loadAllVehiclesAsync(customer));
+            //taskLoadShips.Start();
+
+            //System.Console.WriteLine("FROM UI");   // should be called last but appear first. ✔
 
             var currentPilot = new StarWarsPerson
             {
-                Name = customerName
+                Name = customer.Name
             } ;
             
 
@@ -38,7 +47,7 @@ namespace ConsoleApp2
 
             if (DbUtils.IsDocked(currentPilot))
             {
-                Logger.systemLog("You already have a ship here, do you want to check it out or swap it for another one? S = swap, E = check out ", ConsoleColor.DarkYellow);
+                Logger.systemLog("You already have a ship here, do you want to check it out or swap it for another one? ", ConsoleColor.DarkYellow);
                 Logger.systemLog("S = swap, E = check out ", ConsoleColor.DarkYellow);
                 string sAnswer = Console.ReadLine();
                 //char cAnswer = Console.ReadLine();
@@ -75,11 +84,24 @@ namespace ConsoleApp2
 
             }
 
-            customer = await taskLoadChar;
 
             if (customer.Exists)
             {
-                var ship = PickVehicle(customer);
+                List<Ship.Result> vShip = await await taskLoadShips; //"await await" <-- intellisense  WTF
+               
+                Console.WriteLine();
+                Logger.systemLog("Which ship?", ConsoleColor.DarkYellow);
+
+
+                for (int i = 0; i != vShip.Count; i++)
+                {
+                    Console.WriteLine(i + " - " + vShip[i].name);
+                }
+                int iAnswer = Convert.ToInt32(Console.ReadLine());
+
+                Ship.Result ship = new Ship.Result();
+                ship = vShip[iAnswer];
+
                 customer.CurrentShipName = ship.name;
                 currentPilot.ShipName = ship.name;
                 currentPilot.Length = ship.length;
@@ -127,6 +149,23 @@ namespace ConsoleApp2
             
             return allShipInfo[choice];
         }
+
+
+        public async static Task<List<Ship.Result>> loadAllVehiclesAsync(Character customer)
+        {
+            List<Ship.Result> allShipInfo = new List<Ship.Result>();
+
+            for (int j = 0; j != customer.OwnedShips.Count; j++)
+            {
+                var shipInfo = Ship.GetShipDetails(customer.OwnedShips[j]);
+                allShipInfo.Add(shipInfo);
+            }
+
+            //System.Console.WriteLine("FROM SHIP LOAD END");   // should be called first but appear last.
+            return allShipInfo;
+        }
+
+
 
         private static bool GetValidChoice(int ownedShipsCount, out int choice)
         {
