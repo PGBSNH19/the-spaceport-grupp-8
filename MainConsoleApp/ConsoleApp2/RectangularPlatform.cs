@@ -41,14 +41,14 @@ namespace ConsoleApp2
         public void DockShip(StarWarsPerson pilot)
         {
             DbUtils.AddNewCustomerDocking(pilot);
-            Logger.ShowSystemErrorText($"Docked Ship: {pilot.ShipName}", ConsoleColor.Green);
+            Logger.systemLog($"Docked Ship: {pilot.ShipName}", ConsoleColor.Green);
         }
         
         public void CheckoutShip(StarWarsPerson pilot)
         {
             var existing = DbUtils.CheckOutCustomer(pilot);
             var fee = CalculateCheckoutFee(existing);
-            Logger.ShowSystemErrorText($"Ship Left The Parkinglot docking fee is {fee}", ConsoleColor.Green);
+            Logger.systemLog($"Ship Left The Parkinglot docking fee is {fee}", ConsoleColor.Green);
         }
 
 
@@ -64,7 +64,7 @@ namespace ConsoleApp2
             var occupied = DbUtils.GetCurrentOccupiedSpace();
 
             var percent = occupied < 1 ? 0 : Convert.ToInt32(occupied / _totalLength * 100);
-            Logger.ShowSystemErrorText($"Dock capacity: {100-percent}% left", ConsoleColor.Gray);
+            Logger.systemLog($"Dock capacity: {100-percent}% left", ConsoleColor.Gray);
         }
 
 

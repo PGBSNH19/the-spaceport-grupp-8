@@ -18,10 +18,10 @@ namespace ConsoleApp2
             while (true)      //⚠ Gameloop	⚠		
             {
                 Console.Clear();
-                Gui.InitiateDialogue(southParkingDeck);   // major parking company, thus we can manage different places / parking decks.
+                Gui.InitiateDialogueAsync(southParkingDeck).Wait();   // major parking company, thus we can manage different places / parking decks.
 
-                Logger.ShowSystemErrorText("Press enter to continue", ConsoleColor.DarkGreen);
-                Console.ReadLine();
+                //Logger.ShowSystemErrorText("Press enter to continue", ConsoleColor.DarkGreen);
+                //Console.ReadLine();
             }
         }
     }

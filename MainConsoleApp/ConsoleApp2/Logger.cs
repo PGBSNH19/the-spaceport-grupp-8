@@ -6,7 +6,7 @@ namespace ConsoleApp2
 {
     public class Logger
     {
-        public static void ShowSystemErrorText(string s, ConsoleColor consoleColorEnum = ConsoleColor.Red) // default red
+        public static void systemLog(string s, ConsoleColor consoleColorEnum = ConsoleColor.Red) // default red
         {
             Console.ForegroundColor = consoleColorEnum;
             Console.WriteLine(($"-[{s.ToUpper()}]-"));

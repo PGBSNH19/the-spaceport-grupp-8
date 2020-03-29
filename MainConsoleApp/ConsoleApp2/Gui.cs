@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ConsoleApp2
 {
@@ -8,31 +9,75 @@ namespace ConsoleApp2
         const int Parkinglotcapacity = 100;  // Macro Substitude
                                             // 26 is the equvilant of 2 default ships (Char 0, Ship 0). used while debuging % for predictibility
 
-        public static void InitiateDialogue(RectangularPlatform parkingDeck)
+        public static async Task InitiateDialogueAsync(RectangularPlatform parkingDeck)
         {
             parkingDeck.ShowCapacity();
 
             Console.WriteLine("What's your name?");
             var customerName = Console.ReadLine();
 
-            var customer = ApiUtils.LoadCharacter(customerName);
+
+            Task<Character> taskLoadChar = new Task<Character>(function: () => ApiUtils.LoadCharacter(customerName));
+            taskLoadChar.Start();
+
+            
+            // Connect to DB here while api is loading :desktop:
+            //  establishDataBaseConnection();
+
+
+
+            Character customer = new Character(); //Empty place holder
 
             var currentPilot = new StarWarsPerson
             {
-                Name = customer.Name
+                Name = customerName
             } ;
             
+
+
+
             if (DbUtils.IsDocked(currentPilot))
             {
-                Logger.ShowSystemErrorText("You already have a ship here, do you want to check it out? Y/N");
-                var answer = Console.ReadLine();
-                if (answer.ToLower().Contains("y"))
-                {
+                Logger.systemLog("You already have a ship here, do you want to check it out or swap it for another one? S = swap, E = check out ", ConsoleColor.DarkYellow);
+                Logger.systemLog("S = swap, E = check out ", ConsoleColor.DarkYellow);
+                string sAnswer = Console.ReadLine();
+                //char cAnswer = Console.ReadLine();
+
+
+                if (sAnswer[0] == 'e') 
+                { 
                     parkingDeck.CheckoutShip(currentPilot);
                     return;
                 }
+           
+
+                if (sAnswer[0] == 's')
+                    parkingDeck.CheckoutShip(currentPilot);
+
+
+
+                // switch (sAnswer[0])
+                // {
+                //     case 'e':
+                //     case 'E':
+                //         parkingDeck.CheckoutShip(currentPilot);
+                //         break;
+                //
+                //     case 's':
+                //     case 'S':
+                //         parkingDeck.CheckoutShip(currentPilot);
+                //         break;
+                //         
+                //     default:
+                //         break;
+                // }
+
+
             }
-            else if (customer.Exists)
+
+            customer = await taskLoadChar;
+
+            if (customer.Exists)
             {
                 var ship = PickVehicle(customer);
                 customer.CurrentShipName = ship.name;
@@ -42,24 +87,18 @@ namespace ConsoleApp2
                 if (parkingDeck.ShipWillFit(ship.length))
                 {
                     if (customer.Wealth > parkingDeck.CalculateDockingFee(ship.length))
-                    {
                         parkingDeck.DockShip(currentPilot);
-                    }
+
                     else
-                    {
-                        Logger.ShowSystemErrorText("Sorry, you can't afford that");
-                    }
+                        Logger.systemLog("Sorry, you can't afford that");
                 }
+
                 else
-                {
-                    Logger.ShowSystemErrorText("Your ship wont fit");
-                }
+                    Logger.systemLog("Your ship wont fit");
 
             }
             else
-            {
-                Logger.ShowSystemErrorText("You do not have access to this garage");
-            }
+                Logger.systemLog("You do not have access to this garage");
         }
 
 
@@ -81,7 +120,7 @@ namespace ConsoleApp2
             var choice = -1;
             while (!GetValidChoice(customer.OwnedShips.Count, out choice))
             {
-                Logger.ShowSystemErrorText("Invalid choice choose again!");
+                Logger.systemLog("Invalid choice choose again!");
             }
             
 
